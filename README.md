@@ -2,6 +2,10 @@
 
   Observe your data changes easily with the [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) power.
 
+  **Note:** `ProxyObserver` exists mostly for reactive libraries which
+  needs to keep track data changes. (e.g. `Vue` to perform DOM
+  updates on `data` mutations).
+
 ## Usage and installation
 
   Importing from raw git (for now):
@@ -13,21 +17,48 @@ const person = {
   name: 'Camilo Rodríguez'
 }
 
-const proxy = ProxyObserver.observe(person, () => {
-  console.log('Changing property')
+const proxy = ProxyObserver.observe(person)
+const observer = ProxyObserver.get(proxy)
+
+observer.subscribe(change => {
+  switch (change.type) {
+    case 'add':
+      console.log(`Property '${change.property}' added`)
+      break
+    case 'set':
+      console.log(`Property '${change.property}' changed`)
+      break
+    case 'delete':
+      console.log(`Property '${change.property}' deleted`)
+      break
+  }
 })
 
+// Changing
 proxy.name = 'Raphael Martinez'
+
+// Adding
 proxy.age = 20
 
-// Output: (2) Changing property
+// Deleting
+delete proxy.age
+
+/*
+
+  Output:
+
+    Property 'name' changed
+    Property 'age' added
+    Property 'age' deleted
+
+*/
 ```
 
 ## API Documentation
 
 <details>
   <summary>
-    ProxyObserver<strong>.observe(value[, handler])</strong>
+    ProxyObserver<strong>.observe(value[, deep])</strong>
   </summary>
 
   <p>
@@ -45,7 +76,7 @@ proxy.age = 20
   </p>
 </details>
 
-### The `ProxyObserver` instance
+### The `ProxyObserver` class
 
 <details>
   <summary>
@@ -79,10 +110,37 @@ proxy.age = 20
 
 <details>
   <summary>
-    observer<strong>.dispatch(...args)</strong>
+    observer<strong>.dispatch(change)</strong>
   </summary>
 
   <p>
     Creates a new ProxyObserver instance with the value being observed
   </p>
 </details>
+
+## Caveats
+
+  1. Take in mind that `ProxyObserver` is a **value** change detector, not a descriptor change detector. So, that means you can't detect changes for
+  something like this:
+
+```js
+proxy.key = 'value'
+
+// This doesn't dispatch changes
+Object.defineProperty(proxy, 'key', { value: 'value', enumerable: false })
+```
+
+  2. Calling methods on observed arrays could dispatch many changes
+  (and different types of them). For example:
+
+```js
+// Dispatch changes for 'length' property increment and index assignation
+proxy.push('value')
+
+// Many changes for values swaping
+proxy.sort()
+proxy.reverse()
+
+// ... (check for yourself)
+proxy.splice(1, 2, 'another value')
+```

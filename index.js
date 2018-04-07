@@ -14,18 +14,36 @@ const __SYMBOL__ = Symbol('ProxyObserver')
  *
  * @api private
  */
-const { hasOwnProperty } = Object.prototype
+const hasOwn = Object.prototype.hasOwnProperty
+
+/**
+ * Determines whether a given `value` is an object
+ *
+ * @type {Function}
+ *
+ * @api private
+ */
+const isObject = value => value !== null && typeof value === 'object'
+
+/**
+ * No-operation
+ *
+ * @type {Function}
+ *
+ * @api private
+ */
+const noop = () => {}
 
 export default class ProxyObserver {
 
   /**
    * Initializes `ProxyObserver`
    *
-   * @param {*} value - Value observed
+   * @param {*} target - Value observed
    *
    * @api public
    */
-  constructor (value) {
+  constructor (target) {
 
     /**
      * Value being observed
@@ -34,29 +52,23 @@ export default class ProxyObserver {
      *
      * @api public
      */
-    this.value = value
+    this.target = target
 
     /**
      * Subscriber functions
      *
-     * @member {Array.<Function>}
+     * @member {Set.<Function>}
      *
      * @api public
      */
-    this.subscribers = []
+    this.subscribers = new Set()
 
-    /**
-     * Symbol reference
-     *
-     * @member {ProxyObserver}
-     *
-     * @api private
-     */
-    Object.defineProperty(value, __SYMBOL__, { value: this })
+    // Annotate target
+    Object.defineProperty(target, __SYMBOL__, { value: this })
   }
 
   /**
-   * Gets a the `ProxyObserver` from the given `proxy`
+   * Gets the `ProxyObserver` from the given `proxy`
    *
    * @param {Proxy} proxy - The proxy itself
    *
@@ -69,36 +81,39 @@ export default class ProxyObserver {
   }
 
   /**
-   * Observe a given `value` to detect changes
+   * Observe a given `target` to detect changes
    *
-   * @param {*} value - The value to be observed
-   * @param {Function} handler - Global handler for deep observing
+   * @param {*} target - The value to be observed
+   * @param {boolean=} deep - Indicating whether observing should be deep
+   * @param {Function=} handler - Global handler for deep observing
    *
    * @return {Proxy} Proxy to track changes
    *
    * @api public
    */
-  static observe (value, handler) {
-    const observer = new ProxyObserver(value)
+  static observe (target, deep = true, handler = noop) {
+    const observer = new ProxyObserver(target)
 
-    function notify (...args) {
-      handler(...args)
-      observer.dispatch(...args)
+    function notify (change) {
+      handler(change)
+      observer.dispatch(change)
     }
 
-    // Start deep observing
-    for (const property in value) {
-      if (hasOwnProperty.call(value, property)) {
-        const _value = value[property]
+    if (deep) {
+      // Start deep observing
+      for (const property in target) {
+        if (hasOwn.call(target, property)) {
+          const value = target[property]
 
-        if (isObject(_value)) {
-          // Replace actual value with the observed one
-          value[property] = ProxyObserver.observe(_value, handler)
+          if (isObject(value)) {
+            // Replace actual value with the observed one
+            target[property] = ProxyObserver.observe(value, deep, notify)
+          }
         }
       }
     }
 
-    return new Proxy(value, {
+    return new Proxy(target, {
 
       /**
        * 1. Detect sets/additions
@@ -113,35 +128,34 @@ export default class ProxyObserver {
        *   In objects:
        *
        *     object[key] = value
+       *     Object.defineProperty(target, property, descriptor)
+       *     Reflect.defineProperty(target, property, descriptor)
        *     ...
        */
-      set (...args) {
-        const value = args[2]
+      defineProperty (target, property, descriptor) {
+        const { value } = descriptor
 
-        if (value !== null && typeof value === 'object') {
-          args[2] = ProxyObserver.observe(value, handler)
+        if (deep && isObject(value)) {
+          descriptor.value = ProxyObserver.observe(value, deep, handler)
         }
 
-        Reflect.set(...args)
-        notify(...args)
+        const old = target[property]
+        const changed = hasOwn.call(target, property)
 
-        return true
-      },
+        const defined = Reflect.defineProperty(target, property, descriptor)
 
-      /**
-       * 2. Catch descriptor sets/addtions
-       *
-       *   Only in objects:
-       *
-       *     Object.defineProperty(object, property, descriptor)
-       *     ...
-       */
-      defineProperty (...args) {
-        if (Reflect.defineProperty(...args)) {
-          notify(...args)
+        if (defined && (!changed || old !== value)) {
+          const change = {
+            type: changed ? 'set' : 'add',
+            value, property, target
+          }
+
+          if (changed) change.old = old
+
+          notify(change)
         }
 
-        return true
+        return defined
       },
 
       /**
@@ -155,15 +169,18 @@ export default class ProxyObserver {
        *   In objects:
        *
        *     delete object[property]
+       *     Reflect.deleteProperty(object, property)
        *     ...
        */
       deleteProperty (target, property) {
-        if (Reflect.has(target, property)) {
-          Reflect.deleteProperty(target, property)
-          notify(target, property)
+        const old = target[property]
+        const deleted = hasOwn.call(target, property) && Reflect.deleteProperty(target, property)
+
+        if (deleted) {
+          notify({ type: 'delete', old, property, target })
         }
 
-        return true
+        return deleted
       }
     })
   }
@@ -178,8 +195,7 @@ export default class ProxyObserver {
    * @api public
    */
   subscribe (subscriber) {
-    this.subscribers.push(subscriber)
-
+    this.subscribers.add(subscriber)
     return this
   }
 
@@ -193,23 +209,22 @@ export default class ProxyObserver {
    * @api public
    */
   unsubscribe (subscriber) {
-    this.subscribers.splice(this.subscribers.indexOf(subscriber), 1)
-
+    this.subscribers.delete(subscriber)
     return this
   }
 
   /**
-   * Dispatch subscribers with given `args`
+   * Dispatch subscribers with given `change`
    *
-   * @param {*...} args - Args to dispatch with
+   * @param {Object} change - Change descriptor
    *
    * @return {ProxyObserver}
    *
    * @api public
    */
-  dispatch (...args) {
+  dispatch (change) {
     this.subscribers.forEach(subscriber => {
-      subscriber(...args)
+      subscriber(change)
     })
 
     return this
