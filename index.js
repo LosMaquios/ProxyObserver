@@ -68,15 +68,35 @@ export default class ProxyObserver {
   }
 
   /**
+   * Returns true whether a given `proxy` is being observed
+   * otherwise, returns false
+   *
+   * @param {Proxy} proxy - The proxy itself
+   *
+   * @return {boolean}
+   *
+   * @api public
+   */
+  static is (proxy) {
+    return hasOwn.call(proxy, __SYMBOL__)
+  }
+
+  /**
    * Gets the `ProxyObserver` from the given `proxy`
    *
    * @param {Proxy} proxy - The proxy itself
    *
    * @return {ProxyObserver}
    *
+   * @throws An error will thrown when the given proxy is not observed
+   *
    * @api public
    */
   static get (proxy) {
+    if (!ProxyObserver.is(proxy)) {
+      throw new Error('The given `proxy` is not a ProxyObserver')
+    }
+
     return proxy[__SYMBOL__]
   }
 
@@ -84,7 +104,7 @@ export default class ProxyObserver {
    * Observe a given `target` to detect changes
    *
    * @param {*} target - The value to be observed
-   * @param {boolean=} deep - Indicating whether observing should be deep
+   * @param {boolean=} deep - Indicating whether observation should be deep
    * @param {Function=} handler - Global handler for deep observing
    *
    * @return {Proxy} Proxy to track changes
@@ -92,6 +112,9 @@ export default class ProxyObserver {
    * @api public
    */
   static observe (target, deep = true, handler = noop) {
+    // Avoid observe twice... Just return the target
+    if (ProxyObserver.is(target)) return target
+
     const observer = new ProxyObserver(target)
 
     function notify (change) {
@@ -159,7 +182,7 @@ export default class ProxyObserver {
       },
 
       /**
-       * 3. Track property deletions
+       * 2. Track property deletions
        *
        *   In arrays:
        *

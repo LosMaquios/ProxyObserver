@@ -76,6 +76,16 @@ delete proxy.age
   </p>
 </details>
 
+<details>
+  <summary>
+    ProxyObserver<strong>.is(proxy)</strong>
+  </summary>
+
+  <p>
+    Determines whether a given `proxy` is created from a `ProxyObserver`
+  </p>
+</details>
+
 ### The `ProxyObserver` class
 
 <details>
