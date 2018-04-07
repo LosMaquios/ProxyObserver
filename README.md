@@ -11,7 +11,7 @@
   Importing from cdn:
 
 ```js
-import ProxyObserver from 'https://cdn.jsdelivr.net/gh/LosMaquios/ProxyObserver@0.1.0/index.js'
+import ProxyObserver from 'https://cdn.jsdelivr.net/gh/LosMaquios/ProxyObserver/index.js'
 
 const person = {
   name: 'Camilo Rodríguez'
