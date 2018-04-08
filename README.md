@@ -128,6 +128,42 @@ delete proxy.age
   </p>
 </details>
 
+### The `change` descriptors
+
+#### `add` descriptor
+
+```ts
+interface AddDescriptor {
+  type: 'add'
+  value: any
+  property: string
+  target: any
+}
+```
+
+#### `set` descriptor
+
+```ts
+interface SetDescriptor {
+  type: 'set'
+  old: any
+  value: any
+  property: string
+  target: any
+}
+```
+
+#### `delete` descriptor
+
+```ts
+interface DeleteDescriptor {
+  type: 'set'
+  old: any
+  property: string
+  target: any
+}
+```
+
 ## Caveats
 
   1. Take in mind that `ProxyObserver` is a **value** change detector, not a descriptor change detector. So, that means you can't detect changes for
