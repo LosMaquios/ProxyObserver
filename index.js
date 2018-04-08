@@ -62,23 +62,20 @@ export default class ProxyObserver {
      * @api public
      */
     this.subscribers = new Set()
-
-    // Annotate target
-    Object.defineProperty(target, __SYMBOL__, { value: this })
   }
 
   /**
-   * Returns true whether a given `proxy` is being observed
+   * Returns true whether a given `value` is being observed
    * otherwise, returns false
    *
-   * @param {Proxy} proxy - The proxy itself
+   * @param {*} value - The value itself
    *
    * @return {boolean}
    *
    * @api public
    */
-  static is (proxy) {
-    return hasOwn.call(proxy, __SYMBOL__)
+  static is (value) {
+    return isObject(value) && hasOwn.call(value, __SYMBOL__)
   }
 
   /**
@@ -116,6 +113,9 @@ export default class ProxyObserver {
     if (ProxyObserver.is(target)) return target
 
     const observer = new ProxyObserver(target)
+
+    // Annotate target
+    Object.defineProperty(target, __SYMBOL__, { value: observer })
 
     function notify (change) {
       handler(change)
@@ -157,13 +157,12 @@ export default class ProxyObserver {
        */
       defineProperty (target, property, descriptor) {
         const { value } = descriptor
+        const old = target[property]
+        const changed = hasOwn.call(target, property)
 
         if (deep && isObject(value)) {
           descriptor.value = ProxyObserver.observe(value, deep, handler)
         }
-
-        const old = target[property]
-        const changed = hasOwn.call(target, property)
 
         const defined = Reflect.defineProperty(target, property, descriptor)
 
