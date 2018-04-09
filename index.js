@@ -65,6 +65,26 @@ export default class ProxyObserver {
   }
 
   /**
+   * Default observe options
+   *
+   * @type {Object}
+   * @default
+   *
+   * @api public
+   */
+  static get observeOptions () {
+    return {
+      deep: true,
+
+      // By default, we compare the stringified raw values to avoid observed ones
+      // and conflicts between proxy object structures.
+      compare (value, old/*, property, target*/) {
+        return JSON.stringify(value) !== JSON.stringify(old)
+      }
+    }
+  }
+
+  /**
    * Returns true whether a given `value` is being observed
    * otherwise, returns false
    *
@@ -101,16 +121,20 @@ export default class ProxyObserver {
    * Observe a given `target` to detect changes
    *
    * @param {*} target - The value to be observed
-   * @param {boolean=} deep - Indicating whether observation should be deep
-   * @param {Function=} handler - Global handler for deep observing
+   * @param {Object} [options] - An object of options
+   * @param {boolean} [options.deep] - Indicating whether observation should be deep
+   * @param {Function} [options.compare] - Compare values with a function to dispatch changes
+   * @param {Function} [_handler] - Internal global handler for deep observing
    *
    * @return {Proxy} Proxy to track changes
    *
    * @api public
    */
-  static observe (target, deep = true, handler = noop) {
+  static observe (target, options = {}, _handler = noop) {
     // Avoid observe twice... Just return the target
     if (ProxyObserver.is(target)) return target
+
+    const { deep, compare } = Object.assign({}, ProxyObserver.observeOptions, options)
 
     const observer = new ProxyObserver(target)
 
@@ -118,7 +142,7 @@ export default class ProxyObserver {
     Object.defineProperty(target, __SYMBOL__, { value: observer })
 
     function notify (change) {
-      handler(change)
+      _handler(change)
       observer.dispatch(change)
     }
 
@@ -130,7 +154,7 @@ export default class ProxyObserver {
 
           if (isObject(value)) {
             // Replace actual value with the observed one
-            target[property] = ProxyObserver.observe(value, deep, notify)
+            target[property] = ProxyObserver.observe(value, options, notify)
           }
         }
       }
@@ -161,16 +185,13 @@ export default class ProxyObserver {
         const changed = hasOwn.call(target, property)
 
         if (deep && isObject(value)) {
-          descriptor.value = ProxyObserver.observe(value, deep, handler)
+          descriptor.value = ProxyObserver.observe(value, options, _handler)
         }
 
         const defined = Reflect.defineProperty(target, property, descriptor)
 
-        if (defined && (!changed || old !== value)) {
-          const change = {
-            type: changed ? 'set' : 'add',
-            value, property, target
-          }
+        if (defined && (!changed || compare(value, old, property, target))) {
+          const change = { type: changed ? 'set' : 'add', value, property, target }
 
           if (changed) change.old = old
 
@@ -246,7 +267,7 @@ export default class ProxyObserver {
    */
   dispatch (change) {
     this.subscribers.forEach(subscriber => {
-      subscriber(change)
+      subscriber(change, this.target)
     })
 
     return this

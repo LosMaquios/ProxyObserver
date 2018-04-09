@@ -58,11 +58,11 @@ delete proxy.age
 
 <details>
   <summary>
-    ProxyObserver<strong>.observe(value[, deep])</strong>
+    ProxyObserver<strong>.observe(value[, options])</strong>
   </summary>
 
   <p>
-    Observes the given value and pass an optional handler
+    Observes the given value and pass optinally options
   </p>
 </details>
 
