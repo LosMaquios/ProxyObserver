@@ -17,13 +17,13 @@ const __SYMBOL__ = Symbol('ProxyObserver')
 const hasOwn = Object.prototype.hasOwnProperty
 
 /**
- * Determines whether a given `value` is an object
+ * Determines whether a given `value` is a plain object
  *
  * @type {Function}
  *
  * @api private
  */
-const isObject = value => value !== null && typeof value === 'object'
+const isObject = value => Object.prototype.toString.call(value) === '[object Object]'
 
 /**
  * No-operation
@@ -161,6 +161,8 @@ export default class ProxyObserver {
     }
 
     return new Proxy(target, {
+      // We can implement something like (get trap):
+      // https://stackoverflow.com/a/43236808
 
       /**
        * 1. Detect sets/additions
