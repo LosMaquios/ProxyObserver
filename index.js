@@ -17,13 +17,13 @@ const __SYMBOL__ = Symbol('ProxyObserver')
 const hasOwn = Object.prototype.hasOwnProperty
 
 /**
- * Determines whether a given `value` is a plain object
+ * Determines whether a given `value` is observable
  *
  * @type {Function}
  *
  * @api private
  */
-const isObject = value => Object.prototype.toString.call(value) === '[object Object]'
+const isObservable = value => Object.prototype.toString.call(value) === '[object Object]' || Array.isArray(value)
 
 /**
  * No-operation
@@ -95,7 +95,7 @@ export default class ProxyObserver {
    * @api public
    */
   static is (value) {
-    return isObject(value) && hasOwn.call(value, __SYMBOL__)
+    return isObservable(value) && hasOwn.call(value, __SYMBOL__)
   }
 
   /**
@@ -152,7 +152,7 @@ export default class ProxyObserver {
         if (hasOwn.call(target, property)) {
           const value = target[property]
 
-          if (isObject(value)) {
+          if (isObservable(value)) {
             // Replace actual value with the observed one
             target[property] = ProxyObserver.observe(value, options, notify)
           }
@@ -186,7 +186,7 @@ export default class ProxyObserver {
         const old = target[property]
         const changed = hasOwn.call(target, property)
 
-        if (deep && isObject(value)) {
+        if (deep && isObservable(value)) {
           descriptor.value = ProxyObserver.observe(value, options, _handler)
         }
 
