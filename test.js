@@ -48,3 +48,6 @@ test('plain array observing', t => {
   t.true(subscriber.calledOnce, '`subscriber` should be called once')
   t.true(subscriber.calledWith(change), '`subscriber` should be called with properly change descriptor')
 })
+
+test.todo('array deep observing')
+test.todo('object deep observing')

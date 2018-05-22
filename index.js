@@ -187,7 +187,7 @@ export default class ProxyObserver {
         const changed = hasOwn.call(target, property)
 
         if (deep && isObservable(value)) {
-          descriptor.value = ProxyObserver.observe(value, options, _handler)
+          descriptor.value = ProxyObserver.observe(value, options, notify)
         }
 
         const defined = Reflect.defineProperty(target, property, descriptor)
