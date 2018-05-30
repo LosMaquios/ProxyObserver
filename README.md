@@ -157,7 +157,7 @@ interface SetDescriptor {
 
 ```ts
 interface DeleteDescriptor {
-  type: 'set'
+  type: 'delete'
   old: any
   property: string
   target: any

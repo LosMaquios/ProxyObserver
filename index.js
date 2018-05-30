@@ -1,11 +1,11 @@
 /**
- * Internal symbol to annotate proxy values
+ * Store observers internally
  *
- * @type {Symbol}
+ * @type {WeakMap}
  *
  * @api private
  */
-const __SYMBOL__ = Symbol('ProxyObserver')
+const __observers__ = new WeakMap()
 
 /**
  * Alias of `Object.prototype.hasOwnProperty`
@@ -95,26 +95,26 @@ export default class ProxyObserver {
    * @api public
    */
   static is (value) {
-    return isObservable(value) && hasOwn.call(value, __SYMBOL__)
+    return isObservable(value) && __observers__.has(value)
   }
 
   /**
-   * Gets the `ProxyObserver` from the given `proxy`
+   * Gets the `ProxyObserver` instance from the given `value`
    *
-   * @param {Proxy} proxy - The proxy itself
+   * @param {*} value - The value itself
    *
    * @return {ProxyObserver}
    *
-   * @throws An error will thrown when the given proxy is not observed
+   * @throws An error will thrown when the given value is not observed
    *
    * @api public
    */
-  static get (proxy) {
-    if (!ProxyObserver.is(proxy)) {
-      throw new Error('The given `proxy` is not a ProxyObserver')
+  static get (value) {
+    if (!ProxyObserver.is(value)) {
+      throw new Error('The given `value` is not a ProxyObserver')
     }
 
-    return proxy[__SYMBOL__]
+    return __observers__.get(value)
   }
 
   /**
@@ -138,9 +138,6 @@ export default class ProxyObserver {
 
     const observer = new ProxyObserver(target)
 
-    // Annotate target
-    Object.defineProperty(target, __SYMBOL__, { value: observer })
-
     function notify (change) {
       _handler(change)
       observer.dispatch(change)
@@ -160,7 +157,7 @@ export default class ProxyObserver {
       }
     }
 
-    return new Proxy(target, {
+    const proxy = new Proxy(target, {
       // We can implement something like (get trap):
       // https://stackoverflow.com/a/43236808
 
@@ -228,6 +225,14 @@ export default class ProxyObserver {
         return deleted
       }
     })
+
+    // Indexed by target
+    __observers__.set(target, observer)
+
+    // Indexed by proxy
+    __observers__.set(proxy, observer)
+
+    return proxy
   }
 
   /**
