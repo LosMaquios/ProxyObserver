@@ -60,10 +60,30 @@ delete proxy.age
   <summary>
     ProxyObserver<strong>.observe(value[, options])</strong>
   </summary>
+  <br>
 
-  <p>
-    Observes the given value and pass optinally options
-  </p>
+  Observes the given `value` and optionally pass `options`
+
+**Arguments:**
+
+  - [`any`] **value**: Value to be observed
+  - [`Object`] **options**: An object containing the following options (defaults to [`observeOptions`](#observeOptions))
+    - [`boolean`] **deep**: A flag to enable deep observing (defaults to `false`)
+    - [`Function`] **compare**: A function to compare new values (defaults to [`observeOptions.compare`](#observeOptions-compare))
+
+**Returns:** A `Proxy` object which dispatch subscribers on changes.
+
+```js
+  const obj = { key: 'value' }
+
+  const proxy = ProxyObserver.observe(obj, {
+    deep: false,
+    compare (value, old, property, target) {
+      // Always dispatch changes
+      return true
+    }
+  })
+```
 </details>
 
 <details>
