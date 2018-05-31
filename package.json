@@ -2,12 +2,13 @@
   "name": "proxy-observer",
   "version": "0.3.3",
   "description": "Easy data observing with Proxies",
-  "main": "index.js",
+  "main": "proxy-observer.js",
   "repository": "https://github.com/LosMaquios/ProxyObserver",
   "author": "Camilo Rodríguez <aeromotiondesign@gmail.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
+    "build": "rollup index.js --format umd --name ProxyObserver --file proxy-observer.js",
     "test": "ava test.js --verbose"
   },
   "devDependencies": {
@@ -15,6 +16,7 @@
     "@babel/preset-env": "^7.0.0-beta.44",
     "@babel/register": "^7.0.0-beta.44",
     "ava": "^1.0.0-beta.3",
+    "rollup": "^0.59.4",
     "sinon": "^4.5.0"
   },
   "ava": {
