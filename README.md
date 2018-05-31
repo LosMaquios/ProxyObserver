@@ -3,7 +3,7 @@
   Observe your data changes easily with the [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) power.
 
   **Note:** `ProxyObserver` exists mostly for reactive libraries which
-  needs to keep track data changes. (e.g. `Vue` to perform DOM
+  need to keep track of their data changes. (e.g. `Vue` to perform DOM
   updates on `data` mutations).
 
 ## Usage and installation
