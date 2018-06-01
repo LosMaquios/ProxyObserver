@@ -64,46 +64,78 @@ delete proxy.age
 
   Observes the given `value` and optionally pass `options`
 
-**Arguments:**
+  **Arguments:**
 
   - [`any`] **value**: Value to be observed
   - [`Object`] **options**: An object containing the following options (defaults to [`observeOptions`](#observeOptions))
     - [`boolean`] **deep**: A flag to enable deep observing (defaults to `false`)
     - [`Function`] **compare**: A function to compare new values (defaults to [`observeOptions.compare`](#observeOptions-compare))
 
-**Returns:** A `Proxy` object which dispatch subscribers on changes.
+  **Returns:** A `Proxy` object which dispatch subscribers on changes.
 
-```js
-  const obj = { key: 'value' }
+  **Example:**
 
-  const proxy = ProxyObserver.observe(obj, {
-    deep: false,
-    compare (value, old, property, target) {
-      // Always dispatch changes
-      return true
-    }
-  })
-```
+  ```js
+    const obj = { key: 'value' }
+
+    const proxy = ProxyObserver.observe(obj, {
+      deep: false,
+      compare (value, old, property, target) {
+        // Always dispatch changes
+        return true
+      }
+    })
+  ```
 </details>
 
 <details>
   <summary>
-    ProxyObserver<strong>.get(proxy)</strong>
+    ProxyObserver<strong>.get(value)</strong>
   </summary>
+  <br>
 
-  <p>
-    Gets the `ProxyObserver` instance from an observed `value`
-  </p>
+  Gets the `ProxyObserver` instance from an observed `value`
+
+  **Arguments:**
+
+  - [`any`] **value**: Value being observed. It could be the value itself or the proxy
+  returned by calling [`ProxyObserver.get()`](#ProxyObserver-get) static method.
+
+  **Returns:** A `ProxyObserver` instance, ready to subscribe or dispatch changes.
+
+  **Example:**
+
+  ```js
+    const proxy = ProxyObserver.observe(obj/*, options */)
+
+    const observer = ProxyObserver.get(proxy)
+
+    // or ProxyObserver.get(obj)
+  ```
 </details>
 
 <details>
   <summary>
-    ProxyObserver<strong>.is(proxy)</strong>
+    ProxyObserver<strong>.is(value)</strong>
   </summary>
+  <br>
 
-  <p>
-    Determines whether a given `proxy` is created from a `ProxyObserver`
-  </p>
+  Determines whether a given `value` is observed.
+
+  **Arguments:**
+
+  - [`any`] **value**: Possible value being observed.
+
+  **Returns:** `true` whether the given `value` is observed, otherwise `false`.
+
+  **Example:**
+
+  ```js
+    const proxy = ProxyObserver.observe(obj/*, options */)
+
+    ProxyObserver.is(proxy) // Returns `true`
+    ProxyObserver.is(obj) // Returns `true`
+  ```
 </details>
 
 ### The `ProxyObserver` class
