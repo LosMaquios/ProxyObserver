@@ -135,6 +135,7 @@ delete proxy.age
 
     ProxyObserver.is(proxy) // Returns `true`
     ProxyObserver.is(obj) // Returns `true`
+    ProxyObserver.is({ non: 'observed' }) // Returns `false`
   ```
 </details>
 
