@@ -163,42 +163,60 @@ delete proxy.age
 
 <details>
   <summary>
-    <strong>new ProxyObserver(value)</strong>
+    <strong>new ProxyObserver(target)</strong>
   </summary>
+  <br>
 
-  <p>
-    Creates a new ProxyObserver instance with the value being observed
-  </p>
+  Creates a new ProxyObserver instance with the value being observed
+
+  **Arguments:**
+
+  - [`any`] **target**: Value being observed.
 </details>
 
 <details>
   <summary>
     observer<strong>.subscribe(subscriber)</strong>
   </summary>
+  <br>
 
-  <p>
-    Creates a new ProxyObserver instance with the value being observed
-  </p>
+  Attach a new `subscriber` which will be called when a `change` is dispatched.
+
+  **Arguments:**
+
+  - [`Function`] **subscriber**: The subscriber function itself.
+
+  **Returns:** The `ProxyObserver` instance.
 </details>
 
 <details>
   <summary>
     observer<strong>.unsubscribe(subscriber)</strong>
   </summary>
+  <br>
 
-  <p>
-    Creates a new ProxyObserver instance with the value being observed
-  </p>
+  Detach the given `subscriber`.
+
+  **Arguments:**
+
+  - [`Function`] **subscriber**: Subscriber to be detached.
+
+  **Returns:** The `ProxyObserver` instance.
 </details>
 
 <details>
   <summary>
     observer<strong>.dispatch(change)</strong>
   </summary>
+  <br>
 
-  <p>
-    Creates a new ProxyObserver instance with the value being observed
-  </p>
+  Dispatch a given `change` descriptor.
+
+  **Arguments:**
+
+  - [`Object`] **change**: Descriptor to be dispatched.
+
+  **Returns:** The `ProxyObserver` instance.
 </details>
 
 ### The `change` descriptors
