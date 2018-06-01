@@ -219,37 +219,15 @@ delete proxy.age
   **Returns:** The `ProxyObserver` instance.
 </details>
 
-### The `change` descriptors
+### The change descriptor
 
-#### `add` descriptor
-
-```ts
-interface AddDescriptor {
-  type: 'add'
-  value: any
-  property: string
-  target: any
-}
-```
-
-#### `set` descriptor
+  A change descriptor is dispatched according to the following interface:
 
 ```ts
-interface SetDescriptor {
-  type: 'set'
-  old: any
-  value: any
-  property: string
-  target: any
-}
-```
-
-#### `delete` descriptor
-
-```ts
-interface DeleteDescriptor {
-  type: 'delete'
-  old: any
+interface ChangeDescriptor {
+  type: 'add' | 'set' | 'delete'
+  old?: any
+  value?: any
   property: string
   target: any
 }
@@ -257,8 +235,9 @@ interface DeleteDescriptor {
 
 ## Caveats
 
-  1. Take in mind that `ProxyObserver` is a **value** change detector, not a descriptor change detector. So, that means you can't detect changes for
-  something like this:
+  1. Take in mind that `ProxyObserver` is a **value** change detector,
+  not a descriptor change detector. So, that means you can't detect changes
+  for something like this:
 
 ```js
 proxy.key = 'value'
