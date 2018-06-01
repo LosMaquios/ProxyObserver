@@ -56,6 +56,25 @@ delete proxy.age
 
 ## API Documentation
 
+### Convenience properties
+
+<details>
+  <summary>
+    ProxyObserver<strong>.observeOptions</strong>
+  </summary>
+
+  Contains the defaults options passed to `ProxyObserver.observe` method
+
+  **Type:** `Object`
+
+  **Properties:**
+
+  - **deep**: `true` (enable deep observing by default).
+  - **compare**: A [function](https://github.com/LosMaquios/ProxyObserver/blob/913549e7bca301e58903baf4a02a89fe4b66276f/index.js#L81-L83) which compares the stringified version of the old value with the new one.
+</details>
+
+### Convenience methods
+
 <details>
   <summary>
     ProxyObserver<strong>.observe(value[, options])</strong>
@@ -139,7 +158,7 @@ delete proxy.age
   ```
 </details>
 
-### The `ProxyObserver` class
+### The `ProxyObserver` instance
 
 <details>
   <summary>
