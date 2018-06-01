@@ -62,6 +62,7 @@ delete proxy.age
   <summary>
     ProxyObserver<strong>.observeOptions</strong>
   </summary>
+  <br>
 
   Contains the defaults options passed to `ProxyObserver.observe` method
 
