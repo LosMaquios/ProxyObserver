@@ -111,15 +111,9 @@
      *
      * @return {ProxyObserver}
      *
-     * @throws An error will thrown when the given value is not observed
-     *
      * @api public
      */
     static get (value) {
-      if (!ProxyObserver.is(value)) {
-        throw new Error('The given `value` is not a ProxyObserver')
-      }
-
       return __observers__.get(value)
     }
 
