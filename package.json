@@ -1,6 +1,6 @@
 {
   "name": "proxy-observer",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Easy data observing with Proxies",
   "main": "proxy-observer.js",
   "repository": "https://github.com/LosMaquios/ProxyObserver",

@@ -23,13 +23,13 @@ const observer = ProxyObserver.get(proxy)
 observer.subscribe(change => {
   switch (change.type) {
     case 'add':
-      console.log(`Property '${change.property}' added`)
+      console.log(`Property '${change.key}' added`)
       break
     case 'set':
-      console.log(`Property '${change.property}' changed`)
+      console.log(`Property '${change.key}' changed`)
       break
     case 'delete':
-      console.log(`Property '${change.property}' deleted`)
+      console.log(`Property '${change.key}' deleted`)
       break
   }
 })
@@ -54,6 +54,36 @@ delete proxy.age
 */
 ```
 
+## Patch strategy
+
+  The patch strategy allow us to observe `WeakMap`, `Map`, `WeakSet` and `Set` native objects.
+
+```js
+const map = new Map()
+
+map.set('non-observed', 'value')
+
+// it's not necessary to assign the observed result value to a variable since we patch the `map` instance
+// Note: The patch strategy ONLY patch (Weak)Map/Set objects
+ProxyObserver.observe(map, {
+  patch: true /* <- important to enable patch strategy */
+})
+
+const observer = ProxyObserver.get(map)
+
+observer.subscribe(change => {
+  if (change.type === 'set') {
+    console.log(`map[${change.key}] = ${change.value}`)
+  }
+})
+
+map.set('observed', 'value')
+
+/**
+ * Output: map[observed] = value
+ */
+```
+
 ## API Documentation
 
 ### Convenience properties
@@ -71,7 +101,7 @@ delete proxy.age
   **Properties:**
 
   - **deep**: `true` (enable deep observing by default).
-  - **compare**: A [function](https://github.com/LosMaquios/ProxyObserver/blob/913549e7bca301e58903baf4a02a89fe4b66276f/index.js#L81-L83) which compares the stringified version of the old value with the new one.
+  - **patch**: `false` (disable patch-strategy by default).
 </details>
 
 ### Convenience methods
@@ -82,30 +112,18 @@ delete proxy.age
   </summary>
   <br>
 
-  Observes the given `value` and optionally pass `options`
+  Observes the given `value` and optionally you can pass `options`
 
   **Arguments:**
 
   - [`any`] **value**: Value to be observed
   - [`Object`] **options**: An object containing the following options (defaults to [`observeOptions`](#observeOptions))
-    - [`boolean`] **deep**: A flag to enable deep observing (defaults to `false`)
-    - [`Function`] **compare**: A function to compare new values (defaults to [`observeOptions.compare`](#observeOptions-compare))
+    - [`boolean`] **deep**: A flag to enable deep observing (defaults to `true`)
+    - [`boolean`] **patch**: Allow patching (Weak)Map/Set objects to detect changes (defaults to `false`)
 
   **Returns:** A `Proxy` object which dispatch subscribers on changes.
 
-  **Example:**
-
-  ```js
-    const obj = { key: 'value' }
-
-    const proxy = ProxyObserver.observe(obj, {
-      deep: false,
-      compare (value, old, property, target) {
-        // Always dispatch changes
-        return true
-      }
-    })
-  ```
+  **Example:** [See here](#usage-and-installation)
 </details>
 
 <details>
@@ -225,10 +243,10 @@ delete proxy.age
 
 ```ts
 interface ChangeDescriptor {
-  type: 'add' | 'set' | 'delete'
+  type: 'add' | 'set' | 'delete' | 'clear' // <- special type for Set/Map objects
   old?: any
   value?: any
-  property: string
+  key?: any
   target: any
 }
 ```
