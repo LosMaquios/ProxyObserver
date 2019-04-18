@@ -2,13 +2,14 @@
   "name": "proxy-observer",
   "version": "0.6.0",
   "description": "Easy data observing with Proxies",
-  "main": "proxy-observer.js",
+  "main": "./dist/proxy-observer.js",
+  "module": "./dist/proxy-observer.esm.js",
   "repository": "https://github.com/LosMaquios/ProxyObserver",
   "author": "Camilo Rodríguez <aeromotiondesign@gmail.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "rollup index.js --format umd --name ProxyObserver --file proxy-observer.js",
+    "build": "rollup -c",
     "test": "ava test.js --verbose"
   },
   "devDependencies": {
