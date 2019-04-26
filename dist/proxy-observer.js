@@ -20,7 +20,7 @@
    *
    * @api private
    */
-  const isObservable = value => typeof value === 'object';
+  const isObservable = value => typeof value === 'object' && value !== null;
 
   /**
    *

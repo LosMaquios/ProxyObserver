@@ -14,7 +14,7 @@ export const hasOwn = Object.prototype.hasOwnProperty
  *
  * @api private
  */
-export const isObservable = value => typeof value === 'object'
+export const isObservable = value => typeof value === 'object' && value !== null
 
 /**
  *
