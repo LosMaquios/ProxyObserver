@@ -1,6 +1,6 @@
 {
   "name": "proxy-observer",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Easy data observing with Proxies",
   "main": "./dist/proxy-observer.js",
   "module": "./dist/proxy-observer.esm.js",
