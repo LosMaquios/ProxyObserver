@@ -17,6 +17,25 @@ const hasOwn = Object.prototype.hasOwnProperty;
 const isObservable = value => typeof value === 'object' && value !== null;
 
 /**
+ * Determines whether a given `descriptor` is observable
+ *
+ * @param {Object} descriptor
+ *
+ * @return {boolean}
+ */
+const isDescriptorObservable = descriptor => (
+
+  // 1. Check for non-accessors
+  !descriptor.get && !descriptor.set
+
+  // 2. Check for observable value
+  && isObservable(descriptor.value)
+
+  // 3. Check for correct descriptor
+  && (descriptor.configurable || descriptor.writable)
+);
+
+/**
  *
  * @param {*} value
  *
@@ -310,17 +329,18 @@ class ProxyObserver {
     }
 
     if (deep) {
+      const descriptors = Object.getOwnPropertyDescriptors(target);
 
       // Start deep observing
-      for (const key in target) {
-        if (hasOwn.call(target, key)) {
-          const value = target[key];
+      for (const key in descriptors) {
+        const descriptor = descriptors[key];
 
-          if (isObservable(value)) {
+        if (isDescriptorObservable(descriptor)) {
 
-            // Replace actual value with the observed one
-            target[key] = ProxyObserver.observe(value, options, notify);
-          }
+          // Replace actual value with the observed one
+          descriptor.value = ProxyObserver.observe(descriptor.value, options, notify);
+
+          Object.defineProperty(target, key, descriptor);
         }
       }
     }
@@ -345,11 +365,11 @@ class ProxyObserver {
        *     ...
        */
       defineProperty (target, key, descriptor) {
-        const { value } = descriptor;
         const old = target[key];
         const changed = hasOwn.call(target, key);
+        const value = descriptor.get ? descriptor.get() : descriptor.value;
 
-        if (deep && isObservable(value)) {
+        if (deep && isDescriptorObservable(descriptor)) {
           descriptor.value = ProxyObserver.observe(value, options, notify);
         }
 

@@ -1,4 +1,4 @@
-import { hasOwn, isObservable, isMapOrSet, isWeakMapOrSet, noop } from './utils'
+import { hasOwn, isObservable, isMapOrSet, isWeakMapOrSet, noop, isDescriptorObservable } from './utils'
 import { patchFull, patchWeak } from './patch'
 
 /**
@@ -122,17 +122,18 @@ export default class ProxyObserver {
     }
 
     if (deep) {
+      const descriptors = Object.getOwnPropertyDescriptors(target)
 
       // Start deep observing
-      for (const key in target) {
-        if (hasOwn.call(target, key)) {
-          const value = target[key]
+      for (const key in descriptors) {
+        const descriptor = descriptors[key]
 
-          if (isObservable(value)) {
+        if (isDescriptorObservable(descriptor)) {
 
-            // Replace actual value with the observed one
-            target[key] = ProxyObserver.observe(value, options, notify)
-          }
+          // Replace actual value with the observed one
+          descriptor.value = ProxyObserver.observe(descriptor.value, options, notify)
+
+          Object.defineProperty(target, key, descriptor)
         }
       }
     }
@@ -157,11 +158,11 @@ export default class ProxyObserver {
        *     ...
        */
       defineProperty (target, key, descriptor) {
-        const { value } = descriptor
         const old = target[key]
         const changed = hasOwn.call(target, key)
+        const value = descriptor.get ? descriptor.get() : descriptor.value
 
-        if (deep && isObservable(value)) {
+        if (deep && isDescriptorObservable(descriptor)) {
           descriptor.value = ProxyObserver.observe(value, options, notify)
         }
 

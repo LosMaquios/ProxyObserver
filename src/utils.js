@@ -17,6 +17,25 @@ export const hasOwn = Object.prototype.hasOwnProperty
 export const isObservable = value => typeof value === 'object' && value !== null
 
 /**
+ * Determines whether a given `descriptor` is observable
+ *
+ * @param {Object} descriptor
+ *
+ * @return {boolean}
+ */
+export const isDescriptorObservable = descriptor => (
+
+  // 1. Check for non-accessors
+  !descriptor.get && !descriptor.set
+
+  // 2. Check for observable value
+  && isObservable(descriptor.value)
+
+  // 3. Check for correct descriptor
+  && (descriptor.configurable || descriptor.writable)
+)
+
+/**
  *
  * @param {*} value
  *
