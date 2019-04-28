@@ -20,7 +20,7 @@
    *
    * @api private
    */
-  const isObservable = value => typeof value === 'object' && value !== null;
+  const isObservable = value => typeof value === 'object' && value !== null && !(value instanceof Date);
 
   /**
    * Determines whether a given `descriptor` is observable
