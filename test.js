@@ -121,19 +121,19 @@ test('observing instances', t => {
       this.age = 21
     }
 
-    getAge () {
-      return this.age
+    incrementAge () {
+      this.age += 1
     }
   }
 
   const { proxy, subscriber } = setup(new Person())
 
-  proxy.age = 22
+  proxy.incrementAge()
 
   const change = {
     type: 'set',
     key: 'age',
-    value: proxy.getAge(),
+    value: 22,
     old: 21,
     target: proxy
   }
