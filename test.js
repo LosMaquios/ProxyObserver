@@ -114,4 +114,31 @@ test('plain patch observing', t => {
   t.true(subscriber.calledWith(change), '`subscriber` should be called with properly change descriptor')
 })
 
+test('observing instances', t => {
+  class Person {
+    constructor () {
+      this.name = 'Camilo'
+      this.age = 21
+    }
+
+    getAge () {
+      return this.age
+    }
+  }
+
+  const { proxy, subscriber } = setup(new Person())
+
+  proxy.age = 22
+
+  const change = {
+    type: 'set',
+    key: 'age',
+    value: proxy.getAge(),
+    old: 21,
+    target: proxy
+  }
+
+  t.true(subscriber.calledOnceWith(change), 'should be called once with properly change descriptor')
+})
+
 test.todo('deep patch observing')
