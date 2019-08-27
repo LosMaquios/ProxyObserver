@@ -51,8 +51,37 @@ export default class ProxyObserver {
   static get observeOptions () {
     return {
       deep: true,
-      patch: false
+      patch: false,
+      ignore: this.ignoreNothing
     }
+  }
+
+  /**
+   * Don't ignore
+   *
+   * @param {Object} object
+   *
+   * @return {boolean}
+   */
+  static ignoreNothing (object) {
+    return false
+  }
+
+  /**
+   * Ignore native objects during observation
+   *
+   * @param {Object} object
+   *
+   * @return {boolean}
+   */
+  static ignoreNative (object) {
+    return (
+      object instanceof Date ||
+      isMapOrSet(object) ||
+      isWeakMapOrSet(object) ||
+      object instanceof EventTarget || // we ignore Node, Text and derivated isntances
+      object instanceof Event
+    )
   }
 
   /**
@@ -100,6 +129,8 @@ export default class ProxyObserver {
 
     const { deep, patch } = options = Object.assign({}, ProxyObserver.observeOptions, options)
 
+    // TODO(aeroxmotion): may we should throw an error when trying to observe an ignored type of `target` (?)
+
     const observer = new ProxyObserver(target)
 
     // Indexed by target
@@ -128,7 +159,7 @@ export default class ProxyObserver {
       for (const key in descriptors) {
         const descriptor = descriptors[key]
 
-        if (isDescriptorObservable(descriptor)) {
+        if (isDescriptorObservable(descriptor, options)) {
 
           // Replace actual value with the observed one
           descriptor.value = ProxyObserver.observe(descriptor.value, options, notify)
@@ -162,7 +193,7 @@ export default class ProxyObserver {
         const changed = hasOwn.call(target, key)
         const value = descriptor.get ? descriptor.get() : descriptor.value
 
-        if (deep && isDescriptorObservable(descriptor)) {
+        if (deep && isDescriptorObservable(descriptor, options)) {
           descriptor.value = ProxyObserver.observe(value, options, notify)
         }
 

@@ -3,6 +3,12 @@ import { spy } from 'sinon'
 
 import ProxyObserver from './src'
 
+function getMapObject () {
+  return {
+    map: new Map()
+  }
+}
+
 function setup (value, patch = false) {
   const proxy = ProxyObserver.observe(value, { patch })
   const observer = ProxyObserver.get(proxy)
@@ -139,6 +145,30 @@ test('observing instances', t => {
   }
 
   t.true(subscriber.calledOnceWith(change), 'should be called once with properly change descriptor')
+})
+
+test('ignore observing', t => {
+  const proxyError = ProxyObserver.observe(getMapObject())
+
+  try {
+    // The map is not ignored so it should throw an error
+    proxyError.map.set('test', 'error')
+
+    // Fail test in no error
+    t.fail()
+  } catch (error) {}
+
+  const proxy = ProxyObserver.observe(getMapObject(), {
+    ignore: ProxyObserver.ignoreNative
+  })
+
+  try {
+    proxy.map.set('test', 'success')
+
+    t.pass()
+  } catch (error) {
+    t.fail(error)
+  }
 })
 
 test.todo('deep patch observing')

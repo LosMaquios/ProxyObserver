@@ -14,16 +14,17 @@ export const hasOwn = Object.prototype.hasOwnProperty
  *
  * @api private
  */
-export const isObservable = value => typeof value === 'object' && value !== null && !(value instanceof Date)
+export const isObservable = value => typeof value === 'object' && value !== null
 
 /**
  * Determines whether a given `descriptor` is observable
  *
  * @param {Object} descriptor
+ * @param {Object} options
  *
  * @return {boolean}
  */
-export const isDescriptorObservable = descriptor => (
+export const isDescriptorObservable = (descriptor, options) => (
 
   // 1. Check for non-accessors
   !descriptor.get && !descriptor.set
@@ -31,7 +32,11 @@ export const isDescriptorObservable = descriptor => (
   // 2. Check for observable value
   && isObservable(descriptor.value)
 
-  // 3. Check for correct descriptor
+  // 3. Check for ignored value
+  // An additional check for patch strategy is needed if we are ignoring native built-in objects
+  && ((options.patch && (isMapOrSet(descriptor.value) || isWeakMapOrSet(descriptor.value))) || !options.ignore(descriptor.value))
+
+  // 4. Check for correct descriptor
   && (descriptor.configurable || descriptor.writable)
 )
 

@@ -98,6 +98,7 @@ map.set('observed', 'value')
 
   - **deep**: `true` (enable deep observing by default).
   - **patch**: `false` (disable patch-strategy by default).
+  - **ignore**: `ignoreNothing()`.
 </details>
 
 ### Convenience methods
@@ -116,6 +117,7 @@ map.set('observed', 'value')
   - [`Object`] **options**: An object containing the following options (defaults to [`observeOptions`](#observeOptions))
     - [`boolean`] **deep**: A flag to enable deep observing (defaults to `true`)
     - [`boolean`] **patch**: Allow patching (Weak)Map/Set objects to detect changes (defaults to `false`)
+    - [`Function`] **ignore**: A function to ignore objects from obversation (defaults to [`ignoreNothing`](#observeOptions-ignoreNothing))
 
   **Returns:** A `Proxy` object which dispatch subscribers on changes.
 
@@ -273,4 +275,19 @@ proxy.reverse()
 
 // ... (check for yourself)
 proxy.splice(1, 2, 'another value')
+```
+
+  3. Observation in built-in objetcs like `Map`, `Set`, etc... won't work properly ([more info](https://2ality.com/2016/11/proxying-builtins.html)).
+  To avoid observation in build-in objects you can use the `ignore` option along with `ignoreNative` function:
+
+```js
+const observeOptions = {
+  // Here we ignore most of the built-in objects
+  ignore: ProxyObserver.ignoreNative
+}
+
+const proxy = ProxyObserver.observe({
+  someObservableObject: { name: 'John Doe' },
+  someIgnoredBuiltInObject: new Map()
+}, observeOptions)
 ```
